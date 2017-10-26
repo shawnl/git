@@ -83,6 +83,14 @@
 #define T_40_59(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, ((B&C)+(D&(B^C))) , 0x8f1bbcdc, A, B, C, D, E )
 #define T_60_79(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (B^C^D) ,  0xca62c1d6, A, B, C, D, E )
 
+#ifdef __x86_64__
+/* Use cryptograms asm routine for x86_64. */
+static void blk_SHA1_Block(blk_SHA_CTX *ctx, const void *block)
+{
+	sha1_block_data_order(ctx, block, 1);
+}
+#else
+/* Use generic implementation. */
 static void blk_SHA1_Block(blk_SHA_CTX *ctx, const void *block)
 {
 	unsigned int A,B,C,D,E;
@@ -190,6 +198,7 @@ static void blk_SHA1_Block(blk_SHA_CTX *ctx, const void *block)
 	ctx->H[3] += D;
 	ctx->H[4] += E;
 }
+#endif
 
 void blk_SHA1_Init(blk_SHA_CTX *ctx)
 {

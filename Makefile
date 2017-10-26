@@ -155,6 +155,9 @@ all::
 # Define BLK_SHA1 environment variable to make use of the bundled
 # optimized C SHA1 routine.
 #
+# Define BLK_SHA1_ASM environment variable to make use of bundled optimized
+# x86_64 routines for SHA1.
+#
 # Define PPC_SHA1 environment variable when running make to make use of
 # a bundled SHA1 routine optimized for PowerPC.
 #
@@ -1479,6 +1482,11 @@ ifdef OPENSSL_SHA1
 else
 ifdef BLK_SHA1
 	LIB_OBJS += block-sha1/sha1.o
+ifdef BLK_SHA1_ASM
+	LIB_OBJS += block-sha1/sha1-x86_64.o
+	LIB_OBJS += block-sha1/x86_64cpuid.o
+	LIB_OBJS += block-sha1/cryptlib.o
+endif
 	BASIC_CFLAGS += -DSHA1_BLK
 else
 ifdef PPC_SHA1
