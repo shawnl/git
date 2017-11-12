@@ -250,6 +250,23 @@ AS_HELP_STRING([--with-openssl],[use OpenSSL library (default is YES)])
 AS_HELP_STRING([],              [ARG can be prefix for openssl library and headers]),
 GIT_PARSE_WITH([openssl]))
 
+# Define GNUTLS_SHA1 if you have and want to use libgnutls. This offers
+# similar sha1 routines as openssl.
+AC_ARG_WITH(gnutls,
+AS_HELP_STRING([--with-gnutls],[use GNUTLS library (default is YES)]),
+    if test "$withval" = "no"; then
+        USE_GNUTLS=
+    elif test "$withval" = "yes"; then
+	USE_GNUTLS=YesPlease
+    else
+	USE_GNUTLS=YesPlease
+	LIBGNUTLSDIR=$withval
+	AC_MSG_NOTICE([Setting LIBGNUTLSDIR to $LIBGNUTLSDIR])
+        dnl USE_LIBGNUTLS can still be modified below, so don't substitute
+        dnl it yet.
+	GIT_CONF_SUBST([LIBGNUTLSDIR])
+    fi)
+
 # Define USE_LIBPCRE if you have and want to use libpcre. Various
 # commands such as log and grep offer runtime options to use
 # Perl-compatible regular expressions instead of standard or extended
@@ -540,6 +557,20 @@ GIT_UNSTASH_FLAGS($OPENSSLDIR)
 GIT_CONF_SUBST([NEEDS_SSL_WITH_CRYPTO])
 GIT_CONF_SUBST([NO_OPENSSL])
 
+#
+# Handle USE_GNUTLS from above
+#
+if test -n "$USE_GNUTLS"; then
+
+GIT_STASH_FLAGS($LIBGNUTLSDIR)
+
+AC_CHECK_LIB([gnutls], [gnutls_hash_init],
+[GNUTLS_SHA1=YesPlease],
+[GNUTLS_SHA1=])
+
+GIT_UNSTASH_FLAGS($LIBGNUTLSDIR)
+
+fi
 #
 # Handle the USE_LIBPCRE1 and USE_LIBPCRE2 options potentially set
 # above.

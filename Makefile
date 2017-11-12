@@ -1252,7 +1252,9 @@ ifndef NO_OPENSSL
 	endif
 else
 	BASIC_CFLAGS += -DNO_OPENSSL
+ifndef GNUTLS_SHA1
 	BLK_SHA1 = 1
+endif
 	OPENSSL_LIBSSL =
 endif
 ifdef NO_OPENSSL
@@ -1481,6 +1483,11 @@ ifdef BLK_SHA1
 	LIB_OBJS += block-sha1/sha1.o
 	BASIC_CFLAGS += -DSHA1_BLK
 else
+ifdef GNUTLS_SHA1
+	LIB_OBJS += gnutls-sha1/sha1.o
+	BASIC_CFLAGS += -DSHA1_GNUTLS
+	EXTLIBS += -lgnutls
+endif
 ifdef PPC_SHA1
 	LIB_OBJS += ppc/sha1.o ppc/sha1ppc.o
 	BASIC_CFLAGS += -DSHA1_PPC
@@ -1488,6 +1495,8 @@ else
 ifdef APPLE_COMMON_CRYPTO
 	COMPAT_CFLAGS += -DCOMMON_DIGEST_FOR_OPENSSL
 	BASIC_CFLAGS += -DSHA1_APPLE
+else
+ifdef GNUTLS_SHA1
 else
 	DC_SHA1 := YesPlease
 	BASIC_CFLAGS += -DSHA1_DC
@@ -1506,6 +1515,7 @@ ifdef DC_SHA1_SUBMODULE
 else
 	LIB_OBJS += sha1dc/sha1.o
 	LIB_OBJS += sha1dc/ubc_check.o
+endif
 endif
 	BASIC_CFLAGS += \
 		-DSHA1DC_NO_STANDARD_INCLUDES \
